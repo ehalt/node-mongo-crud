@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Node js is a vast thing...</title>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-3 mb-3">Mongo Database</h1>
+    <form action="/addProduct" method="post" class="text-center">
+        <input type="text" placeholder="name" name="name">
+        <input type="text" placeholder="price" name="price">
+        <input type="text" placeholder="quantity" name="quantity">
+        <button type="submit" class="btn btn-info">Add product</button>
+    </form>
+    <br>
+
+    <!-- showcase all data from database -->
+    <div id="products" class="text-center">
+
+    </div>
+
+    <!-- update database -->
+
+    <div id="update" class="text-center">
+
+    </div>
+    </div>
+
+    <!-- fetching api -->
+    <script>
+        function loadAllProducts(){
+            fetch('/products')
+        .then(response => response.json())
+        .then(products => {
+            console.log(products)
+            const container = document.getElementById('products')
+            container.innerHTML = ''
+            products.forEach(pd => {
+                const p = document.createElement('p')
+                p.innerHTML = `<b>Name of product:> </b>${pd.name} <b>Product price:>  </b> ${pd.price} <b>Product Quantity:> </b>${pd.quantity}
+                
+                <button class="btn btn-success"onclick="loadProduct('${pd._id}')">Update</button>
+                <button class="btn btn-warning"onclick="deleteProduct(event, '${pd._id}')">Delete</button>
+
+                `
+                container.appendChild(p);
+            })
+        })
+
+        }
+        loadAllProducts()
+
+        //product updating ...
+
+        function loadProduct(id){
+            fetch(`product/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const update = document.getElementById('update');
+                update.innerHTML = `
+
+                <h3>Update: ${data._id}</h3>
+                Price: <input type="text" value ="${data.price}" id = "price">
+                <br>
+                Quantity: <input type="text" value ="${data.quantity}" id = "quantity">
+                <button class="btn btn-success" onclick="updateProduct('${data._id}')">Submit</button>
+
+
+                `;
+            })
+        }
+
+        // update product
+
+        function updateProduct(id) {
+            const price = document.getElementById('price').value;
+            const quantity = document.getElementById('quantity').value;
+            const product = {id, price, quantity};
+            fetch(`/update/${id}`, {
+                method: 'PATCH',
+                headers : {'Content-Type': 'application/json'},
+                body: JSON.stringify(product)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if(result){
+                    loadAllProducts();
+                    document.getElementById('update').innerHTML = '';
+                }
+            })
+        }
+
+        // product deletion
+
+        function deleteProduct(event, id){
+            fetch(`/delete/${id}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result) {
+                    event.target.parentNode.style.display = 'none';
+                }
+            })
+        }
+    </script>
+</body>
+</html>
